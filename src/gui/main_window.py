@@ -5,21 +5,34 @@ from PIL import Image, ImageTk
 import os
 from .training_interface import TrainingInterface
 import logging
+
 logger = logging.getLogger(__name__)
 
 class MainWindow:
     def __init__(self, headless=False):
-        self.headless = headless  # Set headless first
+        # Set display environment variable for Replit
+        os.environ['DISPLAY'] = ':0'
+
+        self.headless = headless
         if not self.headless:
             try:
+                # Initialize customtkinter with Replit-compatible settings
+                ctk.set_appearance_mode("dark")
+                ctk.set_default_color_theme("blue")
+
                 self.window = ctk.CTk()
                 self.window.title("The Gatherer AI - Your Smart Resource Gathering Assistant")
                 self.window.geometry("1200x800")
+
+                # Force window to stay on top for VNC visibility
+                self.window.attributes('-topmost', True)
+
                 self.setup_ui()
+                logger.info("GUI initialized successfully")
             except Exception as e:
-                print(f"Error initializing GUI: {e}")
+                logger.error(f"Error initializing GUI: {e}")
                 self.window = None
-                self.headless = True  # Fall back to headless mode
+                self.headless = True
         else:
             self.window = None
 
