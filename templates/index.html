@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Gatherer AI - Training Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">The Gatherer AI Training Interface</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Control Panel -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Control Panel</h2>
+                
+                <!-- Resource Selection -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Resource Type</label>
+                    <select class="w-full p-2 border rounded">
+                        <option>Stone</option>
+                        <option>Wood</option>
+                        <option>Ore</option>
+                        <option>Fish</option>
+                        <option>Hide</option>
+                    </select>
+                </div>
+
+                <!-- Simulation Controls -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3">AI Learning Simulation</h3>
+                    <button id="simButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Start Simulation
+                    </button>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="progress" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p id="status" class="text-sm text-gray-600 mt-2">Ready to start</p>
+                    </div>
+                </div>
+
+                <!-- Training Button -->
+                <button class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    Train New Model
+                </button>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Preview</h2>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg h-64 flex items-center justify-center">
+                    <p class="text-gray-500">Game preview will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isSimulating = false;
+        const simButton = document.getElementById('simButton');
+        const progressBar = document.getElementById('progress');
+        const statusText = document.getElementById('status');
+
+        simButton.addEventListener('click', () => {
+            isSimulating = !isSimulating;
+            if (isSimulating) {
+                simButton.textContent = 'Stop Simulation';
+                simButton.classList.replace('bg-blue-500', 'bg-red-500');
+                simButton.classList.replace('hover:bg-blue-600', 'hover:bg-red-600');
+                startSimulation();
+            } else {
+                simButton.textContent = 'Start Simulation';
+                simButton.classList.replace('bg-red-500', 'bg-blue-500');
+                simButton.classList.replace('hover:bg-red-600', 'hover:bg-blue-600');
+                stopSimulation();
+            }
+        });
+
+        function startSimulation() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (!isSimulating) {
+                    clearInterval(interval);
+                    return;
+                }
+                progress += 5;
+                if (progress > 100) {
+                    clearInterval(interval);
+                    isSimulating = false;
+                    simButton.textContent = 'Start Simulation';
+                    simButton.classList.replace('bg-red-500', 'bg-blue-500');
+                    simButton.classList.replace('hover:bg-red-600', 'hover:bg-blue-600');
+                    return;
+                }
+                progressBar.style.width = `${progress}%`;
+                updateStatus(progress);
+            }, 500);
+        }
+
+        function stopSimulation() {
+            progressBar.style.width = '0%';
+            statusText.textContent = 'Ready to start';
+        }
+
+        function updateStatus(progress) {
+            const messages = [
+                'Initializing simulation...',
+                'Learning optimal pathfinding...',
+                'Building resource memory...',
+                'Optimizing gathering routes...',
+                'Finalizing learned behaviors...'
+            ];
+            const index = Math.min(Math.floor(progress / 20), messages.length - 1);
+            statusText.textContent = messages[index];
+        }
+    </script>
+</body>
+</html>
