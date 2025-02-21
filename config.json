@@ -1,0 +1,13 @@
+{
+    "model_path": "models/resource_detector.pth",
+    "detection_threshold": 0.7,
+    "openai_model": "gpt-4-vision-preview",
+    "max_tokens": 1000,
+    "temperature": 0.7,
+    "movement_delay": 1.5,
+    "click_delay": 0.2,
+    "window_title": "Albion Online Client",
+    "training_epochs": 10,
+    "batch_size": 4,
+    "learning_rate": 0.005
+}
