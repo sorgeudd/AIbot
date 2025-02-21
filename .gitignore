@@ -45,3 +45,7 @@ replit.nix
 models/*.pth
 models/*.pt
 models/*.model
+
+# Environment variables and secrets
+.env.local
+.env.*.local
