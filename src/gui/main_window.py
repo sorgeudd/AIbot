@@ -4,6 +4,8 @@ import cv2
 from PIL import Image, ImageTk
 import os
 from .training_interface import TrainingInterface
+import logging
+logger = logging.getLogger(__name__)
 
 class MainWindow:
     def __init__(self, headless=False):
@@ -161,80 +163,148 @@ class MainWindow:
         sim_frame = ctk.CTkFrame(self.control_frame)
         sim_frame.pack(pady=15, fill="x")
 
-        ctk.CTkLabel(
+        # Add title with improved styling
+        title_label = ctk.CTkLabel(
             sim_frame,
             text="AI Learning Simulation",
-            font=("Helvetica", 14, "bold")
-        ).pack()
+            font=("Helvetica", 16, "bold")
+        )
+        title_label.pack(pady=(5,10))
 
+        # Add description
+        desc_label = ctk.CTkLabel(
+            sim_frame,
+            text="Watch the AI learn and improve its gathering strategies",
+            wraplength=250,
+            font=("Helvetica", 12)
+        )
+        desc_label.pack(pady=(0,10))
+
+        # Improved button styling
         self.sim_button = ctk.CTkButton(
             sim_frame,
             text="▶ Start Simulation",
             command=self.toggle_simulation,
+            font=("Helvetica", 13),
+            height=40,
             fg_color="blue",
             hover_color="dark blue"
         )
         self.sim_button.pack(pady=5)
+
+        # Add progress indicators
+        self.sim_progress = ctk.CTkProgressBar(sim_frame)
+        self.sim_progress.pack(pady=10, padx=20, fill="x")
+        self.sim_progress.set(0)
+
+        # Add status label with more space
+        self.learning_label = ctk.CTkLabel(
+            sim_frame,
+            text="AI Learning: Ready to start",
+            font=("Helvetica", 12),
+            wraplength=250,
+            height=50
+        )
+        self.learning_label.pack(pady=5)
 
     def toggle_simulation(self):
         try:
             self.simulation_active = not self.simulation_active
             if hasattr(self, 'sim_button'):
                 if self.simulation_active:
+                    logger.info("Starting AI learning simulation")
                     self.sim_button.configure(text="⬛ Stop Simulation")
                     self.start_simulation()
                 else:
+                    logger.info("Stopping AI learning simulation")
                     self.sim_button.configure(text="▶ Start Simulation")
                     self.stop_simulation()
         except Exception as e:
-            print(f"Error toggling simulation: {e}")
+            logger.error(f"Error toggling simulation: {e}")
 
     def start_simulation(self):
-        """Simulate AI learning process"""
+        """Enhanced simulation with more detailed feedback"""
         try:
             if not hasattr(self, 'sim_progress'):
                 return
 
             self.sim_progress.set(0)
             if hasattr(self, 'learning_label'):
-                self.learning_label.configure(text="AI Learning: Observing user actions...")
+                logger.info("Initializing AI learning simulation")
+                self.learning_label.configure(
+                    text="AI Learning: Initializing simulation...\nPreparing learning environment"
+                )
 
-            # Update progress periodically to simulate learning
+            # Update progress periodically with smoother transitions
             if self.simulation_active and hasattr(self, 'window'):
                 current = self.sim_progress.get()
                 if current < 1.0:
-                    self.sim_progress.set(current + 0.1)
-                    self.update_learning_status(current + 0.1)
+                    # Smaller increments for smoother animation
+                    increment = 0.05
+                    self.sim_progress.set(current + increment)
+                    self.update_learning_status(current + increment)
+                    logger.debug(f"Simulation progress: {(current + increment) * 100:.1f}%")
+
+                    # Shorter interval for more frequent updates
                     if self.window:
-                        self.window.after(1000, self.start_simulation)
+                        self.window.after(500, self.start_simulation)
+                else:
+                    # Show completion message
+                    logger.info("AI learning simulation completed")
+                    self.learning_label.configure(
+                        text="AI Learning: Complete!\nNew behaviors have been learned"
+                    )
+                    self.sim_progress.configure(progress_color="green")
+
+                    # Reset simulation after a delay
+                    self.window.after(3000, self.stop_simulation)
+
         except Exception as e:
-            print(f"Error in simulation: {e}")
+            logger.error(f"Error in simulation: {e}")
             self.stop_simulation()
 
     def stop_simulation(self):
         try:
+            logger.info("Stopping AI learning simulation")
             if hasattr(self, 'learning_label'):
                 self.learning_label.configure(text="AI Learning: Idle")
             if hasattr(self, 'sim_progress'):
                 self.sim_progress.set(0)
+                self.sim_progress.configure(progress_color="blue")
         except Exception as e:
-            print(f"Error stopping simulation: {e}")
+            logger.error(f"Error stopping simulation: {e}")
 
     def update_learning_status(self, progress):
+        """Enhanced learning status updates with more detailed messages"""
         try:
             status_messages = [
-                "Analyzing movement patterns...",
-                "Learning resource locations...",
-                "Optimizing gathering routes...",
-                "Improving detection accuracy...",
-                "Finalizing learned behaviors..."
+                ("Analyzing movement patterns", "Learning optimal pathfinding between resources..."),
+                ("Learning resource locations", "Building memory of resource spawn points..."),
+                ("Optimizing gathering routes", "Calculating efficient gathering sequences..."),
+                ("Improving detection accuracy", "Fine-tuning visual recognition model..."),
+                ("Finalizing learned behaviors", "Consolidating learned patterns into behavior model...")
             ]
 
             index = min(int(progress * 5), 4)
+            main_status, detail = status_messages[index]
+
+            logger.debug(f"Learning status update: {main_status} - {detail}")
+
             if hasattr(self, 'learning_label'):
-                self.learning_label.configure(text=f"AI Learning: {status_messages[index]}")
+                self.learning_label.configure(
+                    text=f"AI Learning: {main_status}\n{detail}"
+                )
+
+            # Update UI to show learning progress visually
+            if hasattr(self, 'sim_progress'):
+                self.sim_progress.set(progress)
+
+                # Add color feedback based on progress
+                color = "green" if progress > 0.8 else "orange" if progress > 0.4 else "blue"
+                self.sim_progress.configure(progress_color=color)
+
         except Exception as e:
-            print(f"Error updating learning status: {e}")
+            logger.error(f"Error updating learning status: {e}")
 
 
     def setup_settings_panel(self):
