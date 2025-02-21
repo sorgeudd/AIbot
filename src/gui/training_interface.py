@@ -130,6 +130,9 @@ class TrainingInterface:
         )
         self.analysis_label.pack(pady=5)
 
+        # Add AI Parameters section
+        self.setup_ai_parameters()
+
         # Training controls with progress indicators
         training_frame = ctk.CTkFrame(self.control_panel)
         training_frame.pack(pady=10, fill="x")
@@ -155,6 +158,125 @@ class TrainingInterface:
             font=("Helvetica", 12)
         )
         self.status_label.pack(pady=5)
+
+    def setup_ai_parameters(self):
+        """Setup advanced AI learning parameters configuration"""
+        ai_params_frame = ctk.CTkFrame(self.control_panel)
+        ai_params_frame.pack(pady=15, fill="x")
+
+        # Title
+        ctk.CTkLabel(
+            ai_params_frame,
+            text="Advanced AI Parameters",
+            font=("Helvetica", 14, "bold")
+        ).pack(pady=5)
+
+        # Architecture parameters
+        arch_frame = ctk.CTkFrame(ai_params_frame)
+        arch_frame.pack(pady=5, padx=5, fill="x")
+
+        ctk.CTkLabel(arch_frame, text="Network Architecture", font=("Helvetica", 12, "bold")).pack()
+
+        # Hidden layers input
+        hidden_frame = ctk.CTkFrame(arch_frame)
+        hidden_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(hidden_frame, text="Hidden Layers:").pack(side="left", padx=5)
+        self.hidden_layers_entry = ctk.CTkEntry(hidden_frame, placeholder_text="64,32")
+        self.hidden_layers_entry.pack(side="right", padx=5)
+        self.hidden_layers_entry.insert(0, ",".join(map(str, self.config.ai_learning.hidden_layers)))
+
+        # Dropout rate slider
+        ctk.CTkLabel(arch_frame, text="Dropout Rate:").pack(pady=2)
+        self.dropout_slider = ctk.CTkSlider(
+            arch_frame,
+            from_=0,
+            to=0.5,
+            number_of_steps=50
+        )
+        self.dropout_slider.pack(pady=2)
+        self.dropout_slider.set(self.config.ai_learning.dropout_rate)
+
+        # Training parameters
+        train_frame = ctk.CTkFrame(ai_params_frame)
+        train_frame.pack(pady=5, padx=5, fill="x")
+
+        ctk.CTkLabel(train_frame, text="Training Parameters", font=("Helvetica", 12, "bold")).pack()
+
+        # Learning rate
+        lr_frame = ctk.CTkFrame(train_frame)
+        lr_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(lr_frame, text="Learning Rate:").pack(side="left", padx=5)
+        self.learning_rate_entry = ctk.CTkEntry(lr_frame, placeholder_text="0.005")
+        self.learning_rate_entry.pack(side="right", padx=5)
+        self.learning_rate_entry.insert(0, str(self.config.ai_learning.learning_rate))
+
+        # Batch size
+        batch_frame = ctk.CTkFrame(train_frame)
+        batch_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(batch_frame, text="Batch Size:").pack(side="left", padx=5)
+        self.batch_size_entry = ctk.CTkEntry(batch_frame, placeholder_text="4")
+        self.batch_size_entry.pack(side="right", padx=5)
+        self.batch_size_entry.insert(0, str(self.config.ai_learning.batch_size))
+
+        # Epochs
+        epochs_frame = ctk.CTkFrame(train_frame)
+        epochs_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(epochs_frame, text="Training Epochs:").pack(side="left", padx=5)
+        self.epochs_entry = ctk.CTkEntry(epochs_frame, placeholder_text="10")
+        self.epochs_entry.pack(side="right", padx=5)
+        self.epochs_entry.insert(0, str(self.config.ai_learning.training_epochs))
+
+        # Optimizer selection
+        opt_frame = ctk.CTkFrame(ai_params_frame)
+        opt_frame.pack(pady=5, padx=5, fill="x")
+
+        ctk.CTkLabel(opt_frame, text="Optimization", font=("Helvetica", 12, "bold")).pack()
+
+        self.optimizer_selector = ctk.CTkComboBox(
+            opt_frame,
+            values=["adam", "sgd", "rmsprop"]
+        )
+        self.optimizer_selector.pack(pady=2)
+        self.optimizer_selector.set(self.config.ai_learning.optimizer)
+
+        # Save button
+        self.save_params_button = ctk.CTkButton(
+            ai_params_frame,
+            text="💾 Save Parameters",
+            command=self.save_ai_parameters,
+            fg_color="green",
+            hover_color="dark green"
+        )
+        self.save_params_button.pack(pady=10)
+
+    def save_ai_parameters(self):
+        """Save the AI parameters to config"""
+        try:
+            # Parse hidden layers
+            hidden_layers = [int(x.strip()) for x in self.hidden_layers_entry.get().split(",")]
+
+            # Update AI learning config
+            ai_params = {
+                'hidden_layers': hidden_layers,
+                'dropout_rate': self.dropout_slider.get(),
+                'learning_rate': float(self.learning_rate_entry.get()),
+                'batch_size': int(self.batch_size_entry.get()),
+                'training_epochs': int(self.epochs_entry.get()),
+                'optimizer': self.optimizer_selector.get()
+            }
+
+            # Update config
+            self.config.update({'ai_learning': ai_params})
+            self.config.save()
+
+            # Show success message
+            self.status_label.configure(text="AI parameters saved successfully!")
+
+        except ValueError as e:
+            self.status_label.configure(text=f"Error saving parameters: {str(e)}")
+        except Exception as e:
+            logger.error(f"Error saving AI parameters: {e}")
+            self.status_label.configure(text="Error saving parameters!")
 
     def setup_preview_panel(self):
         preview_label = ctk.CTkLabel(
@@ -294,7 +416,7 @@ class TrainingInterface:
             def update_progress(epoch, total_epochs, loss):
                 progress = (epoch + 1) / total_epochs
                 self.window.after(0, self.progress_bar.set, progress)
-                self.window.after(0, self.status_label.configure, 
+                self.window.after(0, self.status_label.configure,
                                 text=f"Training Epoch {epoch+1}/{total_epochs}\nLoss: {loss:.4f}")
 
             # Start training process
